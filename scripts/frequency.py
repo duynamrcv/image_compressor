@@ -16,7 +16,7 @@ def get_dct_image(img):
 
 def get_idct_image(f):
     img = cv2.idct(f.astype(np.float32))
-    return np.uint8(img)
+    return img
 
 def gaussian_lpf(f, percent=0.5):
     rows, cols = f.shape
@@ -52,6 +52,24 @@ def get_core(f, percent=0.5):
     rows, cols = f.shape
     nrows = int(percent*rows); ncols = int(percent*cols)
     f_new = f[:nrows, :ncols]
+    return f_new, rows, cols
+
+def get_core_gauss(f, percent=0.5):
+    rows, cols = f.shape
+
+    mask = np.zeros([rows, cols])
+    for i in range(rows):
+        for j in range(cols):
+            mask[i,j] = np.sqrt(i**2 + j**2)
+
+    distance = int(percent*(rows+cols)/2)
+    mask = np.exp(-mask**2/(2*distance**2))
+
+    f = f*mask
+
+    nrows = int(percent*rows); ncols = int(percent*cols)
+    f_new = f[:nrows, :ncols]
+    
     return f_new, rows, cols
 
 def get_origin(f_new, rows, cols):

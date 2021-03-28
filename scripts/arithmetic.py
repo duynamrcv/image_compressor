@@ -32,30 +32,26 @@ def encode_image(pixels, block_size=4):
         it = int(i/block_size)
         res[it] = (l + r)/2
 
-    # export encoded tags && pro
-    np.save('data/encoded_image', res)
-    np.save('data/probability', prob)
-    block_size_file = open('data/block_size_file.txt', "w")
-    block_size_file.write(str(block_size))     # write block size
-    block_size_file.write('\n' + str(rows))    # write row dimension
-    block_size_file.write('\n' + str(cols))    # write col dimension
+    # # export encoded tags && pro
+    # np.save('data/encoded_image', res)
+    # np.save('data/probability', prob)
+    # block_size_file = open('data/block_size_file.txt', "w")
+    # block_size_file.write(str(block_size))     # write block size
+    # block_size_file.write('\n' + str(rows))    # write row dimension
+    # block_size_file.write('\n' + str(cols))    # write col dimension
 
-    # print("Encoding: Done!")
+    return res, prob, rows, cols
 
-    # res = np.load("data/encoded_image.npy")
-    # print(res)
-
-def decode_image(encoded_path="data/encoded_image.npy", prob_path="data/probability.npy",
-                    block_size_path="data/block_size_file.txt"):
-    res = np.load(encoded_path)
-    prob = np.load(prob_path)
-    block_size_file = open(block_size_path, "r")
+def decode_image(res, prob, block_size, rows, cols):
+    # res = np.load(encoded_path)
+    # prob = np.load(prob_path)
+    # block_size_file = open(block_size_path, "r")
     
     grayLvl = 256
-    block_size = int(block_size_file.readline())
-    row = int(block_size_file.readline())
-    col = int(block_size_file.readline())
-    total = row * col
+    # block_size = int(block_size_file.readline())
+    # row = int(block_size_file.readline())
+    # col = int(block_size_file.readline())
+    total = rows* cols
     
     out = np.zeros(total)
 
@@ -72,6 +68,16 @@ def decode_image(encoded_path="data/encoded_image.npy", prob_path="data/probabil
                     out[j] = k
                     break
 
-    out = np.array(out).reshape((row, col))
+    out = np.array(out).reshape((rows, cols))
     # print("Decoding: Done!")
     return out
+
+# img = cv2.imread("images/image.png", 0)
+# res, prob, rows, cols = encode_image(img, block_size=4)
+# rec = decode_image(res, prob, 4, rows, cols)
+
+# plt.subplot(121); plt.imshow(img, cmap='gray')
+# plt.title("Original")
+# plt.subplot(122); plt.imshow(rec, cmap='gray')
+# plt.title("Reconstruction")
+# plt.show()

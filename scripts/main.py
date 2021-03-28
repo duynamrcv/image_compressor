@@ -7,102 +7,83 @@ import frequency as fre
 import quantization as qtz
 import quality as qlt
 
-def compressor(img, percent=0.5, qtz_ratio=4, ari_block=4):
-    # TRANSFORMATION
-    # Using to frequency domain uing fft and use the gaussian lowpass filter to reduce the redundancy
-    f_img = fre.get_dct_image(img)
-    f_img, rows, cols = fre.get_core(f_img, percent=percent)
+def compressor(img, percent=0.5, ratio=4, block_size=4):
+    ### RESIZE USING DCT AND IDCT
+    f = fre.get_dct_image(img)
+    f_new, img_row, img_col = fre.get_core_gauss(f, percent=percent)
+    re_img = fre.get_idct_image(f_new)
+    print("Resize Image: Done!")
 
-    np.save("hiuhiu.npy", f_img)
-
-    size_file = open('data/size.txt', "w")
-    size_file.write(str(rows))          # write row dimention
-    size_file.write('\n' + str(cols))   # write col dimention
-    print("Transformation: Done!")
-    print(f_img.astype(np.uint8))
-    print("----------------------")
-
-    # QUANTIZATION
-    quan_img = qtz.quantization(f_img, ratio=qtz_ratio)
+    ### QUANTIZATION
+    quan = qtz.quantization(re_img, ratio=ratio).astype(np.uint8)
     print("Quantization: Done!")
-    print(quan_img)
-    print("----------------------")
 
-    # CODING
-    # Using Arithmetic coding
-    ari.encode_image(quan_img, block_size=ari_block)
+    ### ENCODING
+    res, prob, quan_row, quan_col = ari.encode_image(quan, block_size=block_size)
     print("Encoding: Done!")
-    
-    res = np.load("data/encoded_image.npy")
-    print(res)
-    print("----------------------")
     print("COMPRESS: SUCCESSFUL!!!")
-    return quan_img
+    return res, prob, img_row, img_col, quan_row, quan_col
 
-def decompressor(qtz_ratio=4):
-    # DECODING
-    # Using Arithmetic decoding
-    dec = ari.decode_image().astype(np.uint8)
+def decompressor(res, prob, img_row, img_col, quan_row, quan_col, ratio=4, block_size=4):
+    ### DECODING
+    quan = ari.decode_image(res, prob, block_size, quan_row, quan_col)
     print("Decoding: Done!")
-    print(dec)
-    print("----------------------")
 
-    # DE-QUANTIZATION
-    deqtz_img = qtz.dequantization(dec, ratio=qtz_ratio)
-    print("De-quantization: Done!")
-    print(deqtz_img.astype(np.int16))
-    # np.save('hiuhiu.npy', deqtz_img)
-    print("----------------------")
+    ### DEQUANTIZATION
+    re_img = qtz.dequantization(quan, ratio=ratio)
+    print("Dequantization: Done!")
 
-    # INVERSE TRANSFORMATION
-    size_file = open("data/size.txt", "r")
-    rows = int(size_file.readline())
-    cols = int(size_file.readline())
-    f = fre.get_origin(deqtz_img, rows, cols)
-    img = fre.get_idct_image(f)
-    print("Inverse Tranformation: Done!")
-    print(img)
-    print("----------------------")
+    ### GET ORIGINAL SIZE USING DCT AND IDCT
+    f_re = fre.get_dct_image(re_img)
+    f_rec = fre.get_origin(f_re, img_row, img_col)
+    rec = fre.get_idct_image(f_rec)
+    print("Restore Origin Image: Done!")
+
+    ### COMPENSATION
+    # Edge detection
+    f_com = fre.get_dct_image(rec)
+    f_com = fre.gaussian_hpf(f_com, percent=0.5)
+    edge = fre.get_idct_image(f_com)
+
+    # Compensation
+    bias = np.random.normal(0, 0.02, size=edge.shape)
+    comp = edge 
+
+    rec += comp
+    print("Compensation: Done!")
 
     print("DECOMPRESS: SUCCESSFUL!!!")
-    return img
+    return rec.astype(np.uint8)
 
-def enhancer(img, hp=0.5, gain=1):
-    f = fre.get_dct_image(img)
-    f_edge = fre.gaussian_hpf(f, percent=hp)
-
-    edge = fre.get_idct_image(f_edge)
-    out = img + edge*gain
-    return out
 
 def main():
     # Read image
-    img = cv2.imread("images/lena.png", 0)
-    print(img)
-    print("----------------------")
-
-    percent=0.5
-    qtz_ratio=4
-    ari_block=4
+    img_path = "images/image.png"
+    img = cv2.imread(img_path, 0)
 
     # Compression
-    compressor(img, percent=percent, qtz_ratio=qtz_ratio, ari_block=ari_block)
+    res, prob, img_row, img_col, quan_row, quan_col = compressor(img, percent=0.5, ratio=4, block_size=4)
     
-    # res = np.load("data/encoded_image.npy")
-    
+    np.save("encode.npy", res)
+
     # Reconstruction
-    new = decompressor(qtz_ratio=qtz_ratio)
+    rec = decompressor(res, prob, img_row, img_col, quan_row, quan_col, ratio=4, block_size=4)
     # new = enhancer(new, hp=0.3, gain=1.5)
 
-    print("The MSE value: " + str(qlt.mse(img, new)))
-    print("The PSNR value: " + str(qlt.psnr(img, new)))
+    print("The MSE value: " + str(qlt.mse(img, rec)))
+    print("The PSNR value: " + str(qlt.psnr(img, rec)))
 
     # Show image
     plt.subplot(121); plt.imshow(img, cmap='gray')
     plt.title("Original")
-    plt.subplot(122); plt.imshow(new, cmap='gray')
+    plt.subplot(122); plt.imshow(rec, cmap='gray')
     plt.title("Reconstruction")
+    # plt.subplot(223); plt.imshow(np.abs(img-rec), cmap="gray")
+    # plt.title("Error")
+    # plt.subplot(224); plt.hist(np.abs(img-rec).ravel(), 256, [0,256])
+    # plt.title("ErrorHist")
     plt.show()
+
 
 if __name__ == "__main__":
     main()
