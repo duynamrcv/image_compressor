@@ -24,7 +24,7 @@ Using to compensate the image with 2 compensated steps to reduce the error with 
 # Requirements
 ``` bash
 Python >= 3.6
-numpy, opencv, matplotlib
+numpy, opencv, matplotlib, pyqt5
 ```
 
 ## Download and install reference
