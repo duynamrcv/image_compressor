@@ -39,3 +39,7 @@ $ pip3 install requirements.txt     # Ubuntu
 $ cd image_compressor
 $ python scripts/main.py
 ```
+## Display interface
+![interface](doc/interface.png)
+## MSE and PSNR Graph
+![plot](doc/lena_result.png)
