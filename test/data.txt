@@ -1,5 +1,4 @@
-bit = 100, mse = 12.06, psnr = 37.31
-bit = 79, mse = 12.61, psnr = 37.13
-bit = 50, mse = 15.09, psnr = 36,34
-bit = 25, mse = 26.40, psnr = 33.91
-bit = 12, mse = 54.74, psnr = 30.75 
+128.125kb - psnr 37.325 - ratio: 1.998
+81.406kb - psnr 36.135 - ratio: 3.145
+32.125kb - psnr 34.257 - ratio: 7.969
+20.445kb - psnr 31.368 - ratio: 12.521

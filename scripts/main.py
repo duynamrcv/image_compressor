@@ -73,7 +73,7 @@ class MainWindow(QMainWindow):
         # Variable for compress and decompress
         self.img = None; self.rec = None        # Original image and Restruction Image
         self.time_decom = 0; self.time_com = 0  # Time compress and Time decompress
-        self.percent = 0.5                      # Gaussian percent to filter
+        self.percent = 0.4                      # Gaussian percent to filter
         self.ratio = 4                          # Quantization ratio
         self.block_size = 4                     # Arithmetic block size
 
@@ -236,15 +236,15 @@ class MainWindow(QMainWindow):
         self.label2.setStyleSheet("background-color:  #C4C4C4; border-radius: 20px ")       
 
         # INPUT - Gaussian percent
-        self.gaussian_persent = QLabel(self)
-        self.gaussian_persent.setText('Gaussian Persent')
-        self.gaussian_persent.setAlignment(Qt.AlignCenter)
-        self.gaussian_persent.setFont(QFont('Proxima Nova', 10))
-        self.gaussian_persent.setGeometry(130, 515, 160, 40) 
-        self.gaussian_persent.setStyleSheet("color: #000000; background-color: #C4C4C4;")
+        self.gaussian_percent = QLabel(self)
+        self.gaussian_percent.setText('Gaussian Percent')
+        self.gaussian_percent.setAlignment(Qt.AlignCenter)
+        self.gaussian_percent.setFont(QFont('Proxima Nova', 10))
+        self.gaussian_percent.setGeometry(130, 515, 160, 40) 
+        self.gaussian_percent.setStyleSheet("color: #000000; background-color: #C4C4C4;")
 
         self.gau_box = QLineEdit(self)
-        self.gau_box.setText("0.5")
+        self.gau_box.setText("0.4")
         self.gau_box.setAlignment(Qt.AlignCenter)
         self.gau_box.setFont(QFont('Proxima Nova', 10))
         self.gau_box.move(130, 570) 
